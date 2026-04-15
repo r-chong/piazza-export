@@ -390,6 +390,32 @@ def build_archive_browser(path: Path, output_dir: str = "browser") -> RenderedAr
     return rendered_archive
 
 
+def discover_archives(root: Path) -> list[Path]:
+    archive_root = Path(root)
+    if archive_root.is_file():
+        archive_root = archive_root.parent
+    if not archive_root.exists():
+        raise FileNotFoundError(f"Archive root does not exist: {archive_root}")
+    return [
+        child
+        for child in sorted(archive_root.iterdir())
+        if child.is_dir() and (child / "search_docs.jsonl").exists()
+    ]
+
+
+def render_html_all(root: Path, output_dir: str = "browser", sitemap_name: str = "index.html") -> Path:
+    archive_root = Path(root)
+    rendered_archives = [build_archive_browser(path, output_dir=output_dir) for path in discover_archives(archive_root)]
+    assets_dir = ensure_directory(archive_root / "assets")
+    (assets_dir / "styles.css").write_text(STYLESHEET.strip() + "\n", encoding="utf-8")
+    sitemap_path = archive_root / sitemap_name
+    sitemap_path.write_text(
+        _render_master_sitemap(archive_root, rendered_archives),
+        encoding="utf-8",
+    )
+    return sitemap_path
+
+
 def _resolve_output_dir(archive_dir: Path, output_dir: str) -> Path:
     candidate = Path(output_dir)
     if candidate.is_absolute():
@@ -532,6 +558,53 @@ def _render_archive_index(archive: RenderedArchive) -> str:
     pdfFilter.addEventListener("change", applyFilters);
   }})();
   </script>
+</body>
+</html>
+"""
+
+
+def _render_master_sitemap(archive_root: Path, archives: list[RenderedArchive]) -> str:
+    groups = []
+    for archive in archives:
+        index_href = os.path.relpath(archive.browser_dir / "index.html", archive_root).replace(os.sep, "/")
+        rows = "".join(
+            _render_sitemap_row(
+                os.path.relpath(post.path, archive_root).replace(os.sep, "/"),
+                post,
+            )
+            for post in archive.posts
+        )
+        groups.append(
+            f"""
+    <section class="archive-group">
+      <header class="archive-heading">
+        <h2><a href="{escape(index_href)}">{escape(archive.title)}</a></h2>
+        <p class="archive-meta">{escape(archive.directory_name)} | {len(archive.posts)} posts</p>
+      </header>
+      <div class="sitemap-list">
+        {rows or '<div class="empty-state">No posts were available in this archive.</div>'}
+      </div>
+    </section>
+"""
+        )
+
+    body = "".join(groups) if groups else '<div class="empty-state">No archive directories with search_docs.jsonl were found.</div>'
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Piazza Archive Sitemap</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="page">
+    <header class="site-header">
+      <h1 class="site-title">Piazza Archive Sitemap</h1>
+      <p class="site-subtitle">Direct links to every generated post page across all local archives</p>
+    </header>
+    {body}
+  </div>
 </body>
 </html>
 """

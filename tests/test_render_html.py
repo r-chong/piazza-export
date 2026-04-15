@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 from piazza_rescue.normalize import attach_files_to_search_doc, normalize_post
-from piazza_rescue.render_html import render_html_browser
+from piazza_rescue.render_html import discover_archives, render_html_all, render_html_browser
 from piazza_rescue.utils import append_jsonl, write_json
 
 
@@ -144,6 +144,52 @@ class RenderHtmlTests(unittest.TestCase):
 
             self.assertNotIn("Attachments</h2>", post_html)
             self.assertNotIn("remote_only.pdf", post_html)
+
+    def test_render_html_all_creates_master_sitemap(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            archive_root = Path(tmpdir) / "archive"
+            archive_root.mkdir()
+            archive_a = archive_root / "course-a-20260415T000000Z"
+            archive_b = archive_root / "course-b-20260416T000000Z"
+            archive_a.mkdir()
+            archive_b.mkdir()
+
+            doc_a = normalize_post(SAMPLE_POST, "example123456")
+            doc_b = normalize_post(
+                {
+                    **SAMPLE_POST,
+                    "id": "def456",
+                    "nr": 297,
+                    "history": [
+                        {
+                            "subject": "final review question",
+                            "content": "<p>Can someone clarify the final review sheet?</p>",
+                            "created": "2026-04-03T10:00:00Z",
+                            "name": "Anonymous Molecule",
+                        }
+                    ],
+                },
+                "example123456",
+            )
+
+            append_jsonl(archive_a / "search_docs.jsonl", doc_a)
+            append_jsonl(archive_b / "search_docs.jsonl", doc_b)
+            write_json(archive_a / "class.json", {"network": {"my_name": "Course A", "id": "example123456"}})
+            write_json(archive_b / "class.json", {"network": {"my_name": "Course B", "id": "example123456"}})
+
+            self.assertEqual(discover_archives(archive_root), [archive_a, archive_b])
+
+            sitemap_path = render_html_all(archive_root)
+            sitemap_html = sitemap_path.read_text(encoding="utf-8")
+
+            self.assertTrue((archive_a / "browser" / "index.html").exists())
+            self.assertTrue((archive_b / "browser" / "index.html").exists())
+            self.assertIn("Piazza Archive Sitemap", sitemap_html)
+            self.assertIn("Course A", sitemap_html)
+            self.assertIn("Course B", sitemap_html)
+            self.assertIn('href="course-a-20260415T000000Z/browser/posts/296.html"', sitemap_html)
+            self.assertIn('href="course-b-20260416T000000Z/browser/posts/297.html"', sitemap_html)
+            self.assertIn("Can someone clarify the final review sheet?", sitemap_html)
 
 
 if __name__ == "__main__":

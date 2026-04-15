@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .archive import ArchiveConfig, run_archive
 from .auth import SUPPORTED_BROWSERS, build_piazza_client, load_cookies
-from .render_html import render_html_browser
+from .render_html import render_html_all, render_html_browser
 from .search import search_archive
 from .view import format_post_for_display, load_post_from_archive
 
@@ -48,6 +48,10 @@ def build_parser() -> argparse.ArgumentParser:
     render_parser = subparsers.add_parser("render-html", help="Generate a static HTML browser for an archive.")
     render_parser.add_argument("archive_path", help="Archive directory or path to search.db inside the archive")
     render_parser.add_argument("--output-dir", default="browser", help="Output directory name, relative to the archive by default")
+
+    render_all_parser = subparsers.add_parser("render-html-all", help="Generate static HTML browsers for every archive and a master sitemap.")
+    render_all_parser.add_argument("archive_root", help="Root directory containing archive subdirectories")
+    render_all_parser.add_argument("--output-dir", default="browser", help="Per-archive browser directory name")
     return parser
 
 
@@ -85,6 +89,11 @@ def main() -> None:
     if args.command == "render-html":
         browser_dir = render_html_browser(Path(args.archive_path), output_dir=args.output_dir)
         print(json.dumps({"browser_dir": str(browser_dir)}, indent=2))
+        return
+
+    if args.command == "render-html-all":
+        sitemap_path = render_html_all(Path(args.archive_root), output_dir=args.output_dir)
+        print(json.dumps({"sitemap_path": str(sitemap_path)}, indent=2))
         return
 
     results = search_archive(

@@ -98,6 +98,13 @@ piazza-rescue render-html archive/example123456-20260415T182300Z
 open archive/example123456-20260415T182300Z/browser/index.html
 ```
 
+Build all archive browsers at once and generate a master sitemap:
+
+```bash
+piazza-rescue render-html-all archive
+open archive/index.html
+```
+
 Search PDFs:
 
 ```bash
