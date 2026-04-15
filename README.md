@@ -7,7 +7,7 @@ Local-only Piazza archiver built for time-sensitive course exports. It uses your
 Each run creates a dated directory under `archive/`, for example:
 
 ```text
-archive/example123456-20260415T182300Z/
+archive/example-course-20260415T182300Z/
   browser/
   attachments/
   attachments_manifest.jsonl
@@ -36,7 +36,7 @@ pip install -e .
 Preferred option on macOS: read cookies directly from a logged-in browser profile.
 
 ```bash
-piazza-rescue archive example123456 --browser chrome --preflight-post 327
+piazza-rescue archive example123456 --browser chrome --preflight-post 123
 ```
 
 Supported browser names: `chrome`, `chromium`, `brave`, `edge`, `firefox`, `opera`, `vivaldi`, `safari`.
@@ -46,7 +46,7 @@ Manual cookie input is also supported:
 ```bash
 piazza-rescue archive example123456 \
   --cookie-file piazza-cookies.json \
-  --preflight-post 327
+  --preflight-post 123
 ```
 
 Cookie files may be:
@@ -62,7 +62,7 @@ Important: Piazza's `session_id` cookie is `HttpOnly`, so `document.cookie` is n
 ```bash
 piazza-rescue archive example123456 \
   --browser chrome \
-  --preflight-post 327 \
+  --preflight-post 123 \
   --sleep 1 \
   --download-pdfs
 ```
@@ -81,21 +81,21 @@ Useful flags:
 Search posts:
 
 ```bash
-piazza-rescue search archive/example123456-20260415T182300Z/search.db "midterm 1" --label midterm_1
+piazza-rescue search archive/example-course-20260415T182300Z/search.db "midterm 1" --label midterm_1
 ```
 
 View a result by post number:
 
 ```bash
-piazza-rescue show archive/example123456-20260415T182300Z 327
-piazza-rescue show archive/example123456-20260415T182300Z/search.db 327
+piazza-rescue show archive/example-course-20260415T182300Z 123
+piazza-rescue show archive/example-course-20260415T182300Z/search.db 123
 ```
 
 Generate a simple static HTML browser:
 
 ```bash
-piazza-rescue render-html archive/example123456-20260415T182300Z
-open archive/example123456-20260415T182300Z/browser/index.html
+piazza-rescue render-html archive/example-course-20260415T182300Z
+open archive/example-course-20260415T182300Z/browser/index.html
 ```
 
 Build all archive browsers at once and generate a master sitemap:
@@ -108,7 +108,7 @@ open archive/index.html
 Search PDFs:
 
 ```bash
-piazza-rescue search archive/example123456-20260415T182300Z/search.db "lecture notes" --source pdf
+piazza-rescue search archive/example-course-20260415T182300Z/search.db "lecture notes" --source pdf
 ```
 
 Filter examples:

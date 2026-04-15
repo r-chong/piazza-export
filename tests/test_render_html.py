@@ -51,12 +51,15 @@ SAMPLE_POST = {
     ],
 }
 
+EXAMPLE_NETWORK_ID = "example123456"
+EXAMPLE_COURSE_NAME = "Example Course"
+
 
 class RenderHtmlTests(unittest.TestCase):
     def test_render_html_browser_outputs_index_and_post_pages(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             archive_dir = Path(tmpdir)
-            doc = normalize_post(SAMPLE_POST, "example123456")
+            doc = normalize_post(SAMPLE_POST, EXAMPLE_NETWORK_ID)
             doc["student_answer"] = {
                 "id": "s1",
                 "subject": "",
@@ -79,7 +82,7 @@ class RenderHtmlTests(unittest.TestCase):
             append_jsonl(archive_dir / "search_docs.jsonl", doc)
             write_json(
                 archive_dir / "class.json",
-                {"network": {"my_name": "Example Course", "id": "example123456"}},
+                {"network": {"my_name": EXAMPLE_COURSE_NAME, "id": EXAMPLE_NETWORK_ID}},
             )
             attachment_dir = archive_dir / "attachments" / "296"
             attachment_dir.mkdir(parents=True)
@@ -113,7 +116,7 @@ class RenderHtmlTests(unittest.TestCase):
     def test_render_html_omits_non_local_attachment_links(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             archive_dir = Path(tmpdir)
-            doc = normalize_post(SAMPLE_POST, "example123456")
+            doc = normalize_post(SAMPLE_POST, EXAMPLE_NETWORK_ID)
             doc = attach_files_to_search_doc(
                 doc,
                 [
@@ -127,7 +130,7 @@ class RenderHtmlTests(unittest.TestCase):
             append_jsonl(archive_dir / "search_docs.jsonl", doc)
             write_json(
                 archive_dir / "class.json",
-                {"network": {"my_name": "Example Course", "id": "example123456"}},
+                {"network": {"my_name": EXAMPLE_COURSE_NAME, "id": EXAMPLE_NETWORK_ID}},
             )
             append_jsonl(
                 archive_dir / "attachments_manifest.jsonl",
@@ -154,7 +157,7 @@ class RenderHtmlTests(unittest.TestCase):
             archive_a.mkdir()
             archive_b.mkdir()
 
-            doc_a = normalize_post(SAMPLE_POST, "example123456")
+            doc_a = normalize_post(SAMPLE_POST, EXAMPLE_NETWORK_ID)
             doc_b = normalize_post(
                 {
                     **SAMPLE_POST,
@@ -169,13 +172,13 @@ class RenderHtmlTests(unittest.TestCase):
                         }
                     ],
                 },
-                "example123456",
+                EXAMPLE_NETWORK_ID,
             )
 
             append_jsonl(archive_a / "search_docs.jsonl", doc_a)
             append_jsonl(archive_b / "search_docs.jsonl", doc_b)
-            write_json(archive_a / "class.json", {"network": {"my_name": "Course A", "id": "example123456"}})
-            write_json(archive_b / "class.json", {"network": {"my_name": "Course B", "id": "example123456"}})
+            write_json(archive_a / "class.json", {"network": {"my_name": "Course A", "id": EXAMPLE_NETWORK_ID}})
+            write_json(archive_b / "class.json", {"network": {"my_name": "Course B", "id": EXAMPLE_NETWORK_ID}})
 
             self.assertEqual(discover_archives(archive_root), [archive_a, archive_b])
 

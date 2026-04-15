@@ -60,10 +60,12 @@ SAMPLE_POST = {
     ],
 }
 
+EXAMPLE_NETWORK_ID = "example123456"
+
 
 class NormalizeTests(unittest.TestCase):
     def test_normalize_post(self) -> None:
-        doc = normalize_post(SAMPLE_POST, "example123456")
+        doc = normalize_post(SAMPLE_POST, EXAMPLE_NETWORK_ID)
         self.assertEqual(doc["post_number"], "296")
         self.assertIn("assignment", doc["labels"])
         self.assertIn("stereographic projection", doc["search_text"])
@@ -77,7 +79,7 @@ class NormalizeTests(unittest.TestCase):
     def test_build_search_db(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             archive_dir = Path(tmpdir)
-            doc = normalize_post(SAMPLE_POST, "example123456")
+            doc = normalize_post(SAMPLE_POST, EXAMPLE_NETWORK_ID)
             doc = attach_files_to_search_doc(
                 doc,
                 [

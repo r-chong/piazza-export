@@ -17,3 +17,5 @@ archive/
 old-piazza-archiver/
 *.sqlite
 *.db
+* _ Piazza QA.html
+* _ Piazza QA_files/
