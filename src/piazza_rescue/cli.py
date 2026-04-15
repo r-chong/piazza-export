@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .archive import ArchiveConfig, run_archive
 from .auth import SUPPORTED_BROWSERS, build_piazza_client, load_cookies
+from .render_html import render_html_browser
 from .search import search_archive
 from .view import format_post_for_display, load_post_from_archive
 
@@ -43,6 +44,10 @@ def build_parser() -> argparse.ArgumentParser:
     show_parser.add_argument("archive_path", help="Archive directory or path to search.db inside the archive")
     show_parser.add_argument("post_ref", help="Post number, post id, or permalink token like 327 or @327_f1")
     show_parser.add_argument("--json", action="store_true", help="Print the normalized post JSON instead of formatted text")
+
+    render_parser = subparsers.add_parser("render-html", help="Generate a static HTML browser for an archive.")
+    render_parser.add_argument("archive_path", help="Archive directory or path to search.db inside the archive")
+    render_parser.add_argument("--output-dir", default="browser", help="Output directory name, relative to the archive by default")
     return parser
 
 
@@ -75,6 +80,11 @@ def main() -> None:
             print(json.dumps({"post": post, "attachments": attachments}, indent=2))
         else:
             print(format_post_for_display(post, attachments))
+        return
+
+    if args.command == "render-html":
+        browser_dir = render_html_browser(Path(args.archive_path), output_dir=args.output_dir)
+        print(json.dumps({"browser_dir": str(browser_dir)}, indent=2))
         return
 
     results = search_archive(

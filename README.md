@@ -8,6 +8,7 @@ Each run creates a dated directory under `archive/`, for example:
 
 ```text
 archive/example123456-20260415T182300Z/
+  browser/
   attachments/
   attachments_manifest.jsonl
   class.json
@@ -88,6 +89,13 @@ View a result by post number:
 ```bash
 piazza-rescue show archive/example123456-20260415T182300Z 327
 piazza-rescue show archive/example123456-20260415T182300Z/search.db 327
+```
+
+Generate a simple static HTML browser:
+
+```bash
+piazza-rescue render-html archive/example123456-20260415T182300Z
+open archive/example123456-20260415T182300Z/browser/index.html
 ```
 
 Search PDFs:
